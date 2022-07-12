@@ -1,13 +1,13 @@
 
 
 enum LiftStatus {
-    moving,
-    stoped,
-    broken,
-    maintainance
+    moving = 'moving',
+    stoped = 'stoped',
+    broken = 'broken',
+    maintainance = 'maintainance'
 }
 
-interface Lift {
+interface ILift {
     id: number,
     capacity: number,
     status: LiftStatus,
@@ -18,7 +18,7 @@ interface Lift {
 class MainBuilding {
 
     private _num_lifts: number;
-    private _lifts: Array<Lift> = [];
+    private _lifts: Array<ILift> = [];
 
     // const name: string;
 
@@ -27,13 +27,14 @@ class MainBuilding {
         this._generateLifts()
     }
 
-    public get lifts(): Array<Lift> {
+    public get lifts(): Array<ILift> {
         return this._lifts;
     }
 
     public checkStatus(lift_id: number): LiftStatus | null  {
         try {
-            const filtered_lift: Lift = this._lifts.filter((lift) => lift.id === lift_id)[0]
+            const filtered_lift: ILift = this._lifts.filter((lift) => lift.id === lift_id)[0]
+            console.log(filtered_lift.current_location)
             return filtered_lift.status
         } catch (err: any) {
             console.error(`Error finding lift status: ${err}`)
@@ -41,8 +42,66 @@ class MainBuilding {
         }
     }
 
-    public addLift(value: Lift) {
+    public findLift(lift_id: number): number  {
+        try {
+            // const filtered_lift: ILift = this._lifts.filter((lift) => lift.id === lift_id)[0]
+            const idx = this._lifts.findIndex( lift => lift.id === lift_id );
+            return idx
+        } catch (err: any) {
+            console.error(`Error finding lift status: ${err}`)
+            return -1
+        }
+    }
+
+    public addLift(value: ILift) {
         this._lifts.push(value);
+    }
+
+    // function* move = (from: number, to: number) => {
+
+    // }
+
+    *move(from: number, to: number, idx: number): IterableIterator<number> {
+        while( from != to ){
+
+            if(from - to > 0){
+                from--;
+            } else {
+                from++
+            }
+            console.log(`lift status ${this._lifts[idx].status} on ${from}th floor`)
+            yield from
+        }
+    } 
+
+    
+
+    public call(from: number, lift_id: number) {
+        const idx = this.findLift(lift_id)
+        const cur_lift = this._lifts[idx]
+        const going_to: number = cur_lift.current_location
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+
+        console.log(`lift ${lift_id} going from ${from} to ${going_to}`)
+
+        const delayedCall = () => new Promise(async () => {
+            this._lifts[idx].status = LiftStatus.moving
+            var iter = this.move(from, going_to, idx)
+            while (from != going_to){
+                from = iter.next().value
+                await delay(1000)
+            }
+            this._lifts[idx].status = LiftStatus.stoped
+            console.log(`lift status ${this._lifts[idx].status} now at ${this._lifts[idx].current_location}`)
+        });
+
+        if (this._lifts[idx].status === LiftStatus.moving) {
+            console.error(`Lift #${cur_lift.id} is already moving`)
+        } else if (from === going_to) {
+            console.log('the lif is on the same floor!')
+        } else {
+            delayedCall()
+        }
     }
 
     private _generateLifts(): void {
@@ -66,4 +125,7 @@ class MainBuilding {
 
 const test: MainBuilding = new MainBuilding(3)
 
-console.log(`location of lift 2 is  = ${test.checkStatus(2)}`)
+// console.log(`location of lift 2 is  = ${test.checkStatus(1)}`)
+test.call(5, 1)
+test.call(10, 1)
+// console.log('something')
