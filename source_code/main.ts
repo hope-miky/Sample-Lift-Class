@@ -57,39 +57,34 @@ class MainBuilding {
         this._lifts.push(value);
     }
 
-    // function* move = (from: number, to: number) => {
-
-    // }
-
     *move(from: number, to: number, idx: number): IterableIterator<number> {
         while( from != to ){
 
-            if(from - to > 0){
-                from--;
+            if(to - from > 0){
+                to--
             } else {
-                from++
+                to++
             }
-            console.log(`lift status ${this._lifts[idx].status} on ${from}th floor`)
-            yield from
+            console.log(`lift status ${this._lifts[idx].status} on ${to}th floor`)
+            yield to
         }
     } 
 
     
-
     public call(from: number, lift_id: number) {
         const idx = this.findLift(lift_id)
         const cur_lift = this._lifts[idx]
         const going_to: number = cur_lift.current_location
         const delay = ms => new Promise(res => setTimeout(res, ms));
 
-        console.log(`lift ${lift_id} going from ${from} to ${going_to}`)
+        console.log(`lift ${lift_id} going to ${from} from ${going_to}`)
 
         const delayedCall = () => new Promise(async () => {
             this._lifts[idx].status = LiftStatus.moving
             var iter = this.move(from, going_to, idx)
-            while (from != going_to){
-                from = iter.next().value
-                await delay(1000)
+            while (from != this._lifts[idx].current_location){
+                this._lifts[idx].current_location = iter.next().value
+                await delay(2000)
             }
             this._lifts[idx].status = LiftStatus.stoped
             console.log(`lift status ${this._lifts[idx].status} now at ${this._lifts[idx].current_location}`)
@@ -114,7 +109,6 @@ class MainBuilding {
                 current_location: Math.floor(Math.random() * this._num_lifts)
             })
         })
-        // console.log(this._lifts)
     }
 
 
@@ -125,7 +119,13 @@ class MainBuilding {
 
 const test: MainBuilding = new MainBuilding(3)
 
+
+// const delay = ms => new Promise(res => setTimeout(res, ms));
 // console.log(`location of lift 2 is  = ${test.checkStatus(1)}`)
 test.call(5, 1)
-test.call(10, 1)
+// test.call(10, 1)
+
+// delay(5000)
+// test.call(10, 1)
+
 // console.log('something')
