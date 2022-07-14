@@ -31,6 +31,11 @@ class MainBuilding {
         return this._lifts;
     }
 
+    /**
+     * It returns the status of a lift given its id.
+     * @param {number} lift_id - number - The id of the lift you want to check the status of
+     * @returns LiftStatus | null
+     */
     public checkStatus(lift_id: number): LiftStatus | null  {
         try {
             const filtered_lift: ILift = this._lifts.filter((lift) => lift.id === lift_id)[0]
@@ -42,6 +47,11 @@ class MainBuilding {
         }
     }
 
+    /**
+     * > Find the index of the lift with the given id
+     * @param {number} lift_id - number - the id of the lift you want to find
+     * @returns The index of the lift in the array.
+     */
     public findLift(lift_id: number): number  {
         try {
             // const filtered_lift: ILift = this._lifts.filter((lift) => lift.id === lift_id)[0]
@@ -53,10 +63,20 @@ class MainBuilding {
         }
     }
 
+    /**
+     * This function adds a lift to the lifts array.
+     * @param {ILift} value - ILift - this is the type of the parameter.  In this case, it's an
+     */
     public addLift(value: ILift) {
         this._lifts.push(value);
     }
 
+    /**
+     * *move* is a generator function that returns an iterator that yields the next floor to move to
+     * @param {number} from - the floor the lift iis being called from
+     * @param {number} to - the floor the lift is going to
+     * @param {number} idx - the index of the lift in the array of lifts
+     */
     *move(from: number, to: number, idx: number): IterableIterator<number> {
         while( from != to ){
 
@@ -71,6 +91,13 @@ class MainBuilding {
     } 
 
     
+    /**
+     * The function takes two arguments, the floor the user is on and the lift they want to call. It
+     * then finds the lift and checks if it's moving. If it is, it throws an error. If it's not, it
+     * calls the move function and moves the lift to the floor the user is on
+     * @param {number} from - the floor the user is on
+     * @param {number} lift_id - the id of the lift you want to call
+     */
     public call(from: number, lift_id: number) {
         const idx = this.findLift(lift_id)
         const cur_lift = this._lifts[idx]
@@ -99,6 +126,10 @@ class MainBuilding {
         }
     }
 
+    /**
+     * It creates an array of numbers from 0 to the number of lifts, and then maps each number to a
+     * lift object
+     */
     private _generateLifts(): void {
         [ ...Array(this._num_lifts).keys() ].map((value) => {
             this.addLift({
